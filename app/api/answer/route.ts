@@ -3,8 +3,6 @@ import { OpenAIModel } from "@/types";
 import OpenAI from "openai";
 import { OpenAIStream, StreamingTextResponse } from 'ai'; // Assuming these are exported by the 'ai' package
 
-export const runtime = "edge"
-
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 })
@@ -12,6 +10,13 @@ const openai = new OpenAI({
 export async function POST(req: NextApiRequest) {
   try {
     const { prompt, userKey } = req.body as { prompt: string, userKey: string };
+
+    // Validate prompt
+    if (!prompt) {
+      console.error("Prompt is null or empty.");
+      return new Response("Bad Request: Prompt is required and must be a non-empty string.", { status: 400 });
+    }
+
     if (!userKey) {
       console.log("User key is not given, using environment variables.");
     }
@@ -22,19 +27,18 @@ export async function POST(req: NextApiRequest) {
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant that accurately answers queries using Dr. Andrew Huberman's podcast huberman Lab.\
-           Use the text provided to form your answer. Be accurate, helpful, concise, and clear."
+          content: "You are a helpful assistant that accurately answers queries using Dr. Andrew Huberman's podcast huberman Lab. Use the text provided to form your answer. Be accurate, helpful, concise, and clear."
         },
         {
           role: "user",
-          content: prompt
+          content: prompt // This is where the validation is important
         }
       ],
       max_tokens: 1000,
       temperature: 0.0,
       stream: true
-    })
-   
+    });
+
     // Assuming OpenAIStream from the 'ai' package now directly handles the creation of the stream
     // and the 'ai' package is configured to use your API key and other necessary settings.
     const stream = await OpenAIStream(response);
