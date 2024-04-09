@@ -1,6 +1,25 @@
 'use client';
 
-import React from 'react';
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SettingsModalProps {
   showSettings: boolean;
@@ -33,56 +52,53 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!showSettings) return null;
 
   return (
-    <div className="settings-container p-4 border rounded-lg shadow-lg bg-white">
-      <h2 className="text-lg font-semibold mb-4">Settings</h2>
-      <div className="setting">
-        <label htmlFor="mode-select" className="block mb-2">Mode:</label>
-        <select
-          id="mode-select"
-          value={mode}
-          onChange={(e) => setMode(e.target.value as "search" | "chat")}
-          className="border rounded p-2 w-full mb-4"
-        >
-          <option value="search">Search</option>
-          <option value="chat">Chat</option>
-        </select>
-      </div>
-      <div className="setting">
-        <label htmlFor="match-count" className="block mb-2">Results Count:</label>
-        <input
-          id="match-count"
-          type="number"
-          min={1}
-          max={10}
-          value={matchCount}
-          onChange={(e) => setMatchCount(Number(e.target.value))}
-          className="border rounded p-2 w-full mb-4"
-        />
-      </div>
-      <div className="setting">
-        <label htmlFor="api-key" className="block mb-2">API Key:</label>
-        <input
-          id="api-key"
-          type="text"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          className="border rounded p-2 w-full mb-4"
-        />
-      </div>
-      <div className="flex justify-between">
-        <button
-          onClick={handleSave}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Save
-        </button>
-        <button
-          onClick={handleClear}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Clear
-        </button>
-      </div>
+    <div className="p-4">
+      <Card className="w-[400px]">
+        <CardHeader>
+          <CardTitle>Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="grid w-full gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="mode-select">Mode</Label>
+                <Select value={mode} onValueChange={setMode} defaultValue="chat">
+                  <SelectTrigger id="mode-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="search">Search</SelectItem>
+                      <SelectItem value="chat">Chat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="match-count">Results Count</Label>
+                <Input
+                  id="match-count"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={matchCount.toString()}
+                  onChange={(e) => setMatchCount(Number(e.target.value))}
+                />
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="api-key">API Key</Label>
+                <Input
+                  id="api-key"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                />
+              </div>
+            </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleClear} variant="destructive">Clear</Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
+

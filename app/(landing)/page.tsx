@@ -1,9 +1,5 @@
 'use client';
 import React, { useRef, useState, useEffect } from "react";
-import Head from "next/head";
-import Image from 'next/image'; 
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { SettingsModal } from '@/components/settings/Settings';
 import { SearchBar } from '@/components/searchbar/SearchBar';
 import { PassageList } from '@/components/passagelist/PassageList';
@@ -14,6 +10,8 @@ import { handleSearch } from '@/services/searchService';
 import {loadSettings, saveSettings, clearSettings} from '@/services/settingsService';
 import { storeQuery } from "@/actions/storeQuery";
 import { sendFeedback } from "@/actions/feedback";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 
 export default function Home(): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,7 +19,7 @@ export default function Home(): JSX.Element {
   const [chapters, setChapters] = useState<HLChapter[]>([]);
   const [answer, setAnswer] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [showSettings, setShowSettings] = useState<boolean>(true); // Changed to true to show settings by default
+  const [showSettings, setShowSettings] = useState<boolean>(false);
   const [mode, setMode] = useState<"search" | "chat">("chat");
   const [matchCount, setMatchCount] = useState<number>(5);
   const [apiKey, setApiKey] = useState<string>("");
@@ -65,7 +63,20 @@ export default function Home(): JSX.Element {
   };
 
   const onSearch = async () => {
-    await handleSearch(apiKey, query, matchCount, setChapters, setAnswer, setLoading);
+    setAnswer('');
+    setChapters([]);
+    setLoading(true);
+
+    try {
+      console.log("Searching...");
+      const results = await handleSearch(apiKey, query, matchCount);
+      setChapters(results);
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred while performing the search.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onAnswer = async () => {
@@ -74,16 +85,15 @@ export default function Home(): JSX.Element {
 
   return (
     <>
-      {/* <div className="flex flex-col h-screen">
-        <Navbar /> */}
         <div className="flex-1 h-screen overflow-hidden">
-          <div className="mx-auto flex h-full w-full max-w-[800px] flex-col items-center px-3 pt-4 sm:pt-8">
-            {/* <button
-                className="my-4 p-8 flex cursor-pointer items-center space-x-2 rounded-full border border-zinc-600 px-3 py-1 text-sm hover:opacity-50 "
+          <div className="mx-auto flex h-full w-full max-w-[650px] flex-col items-center px-3 pt-4 sm:pt-8"> {/* Adjusted max-width to 650px for a wider settings component */}
+            <Button variant="outline"
+                className="cursor-pointer border px-3 py-1 text-sm hover:opacity-60 "
                 onClick={() => setShowSettings(!showSettings)}
             >
-              {showSettings ? "Hide" : "Show"} Settings
-            </button>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Button>
             <SettingsModal
               showSettings={showSettings} 
               setShowSettings={setShowSettings} 
@@ -95,7 +105,7 @@ export default function Home(): JSX.Element {
               setApiKey={setApiKey} 
               handleSave={handleSave} 
               handleClear={handleClear} 
-            /> */}
+            />
             <SearchBar 
               query={query} 
               setQuery={setQuery} 
@@ -126,8 +136,6 @@ export default function Home(): JSX.Element {
             )}
           </div>
         </div>
-        {/* <Footer />
-      </div> */}
     </>
   );
 }
