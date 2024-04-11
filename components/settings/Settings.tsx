@@ -47,7 +47,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   handleClear,
 }) => {
   // Debugging: Check if the component is being rendered
-  console.log("SettingsModal rendering, showSettings:", showSettings);
+  // console.log("SettingsModal rendering, showSettings:", showSettings);
 
   if (!showSettings) return null;
 

@@ -9,12 +9,15 @@ const openai = new OpenAI({
 
 export async function POST(req: NextApiRequest) {
   try {
-    const { prompt, userKey } = req.body as { prompt: string, userKey: string };
+    const { prompt, userKey } = await new Response(req.body).json() as {prompt:string , userKey:string};
 
     // Validate prompt
     if (!prompt) {
       console.error("Prompt is null or empty.");
       return new Response("Bad Request: Prompt is required and must be a non-empty string.", { status: 400 });
+    }
+    else {
+      console.log(prompt)
     }
 
     if (!userKey) {
@@ -41,10 +44,11 @@ export async function POST(req: NextApiRequest) {
 
     // Assuming OpenAIStream from the 'ai' package now directly handles the creation of the stream
     // and the 'ai' package is configured to use your API key and other necessary settings.
-    const stream = await OpenAIStream(response);
+    const stream = OpenAIStream(response);
     
     // Assuming StreamingTextResponse is a utility from the 'ai' package that correctly handles
     // streaming responses in the format expected by Next.js or the web standards.
+    console.log("Starting to stream the response...");
     return new StreamingTextResponse(stream);
   } catch (error) {
     console.error("Error in POST /api/answer:", error);

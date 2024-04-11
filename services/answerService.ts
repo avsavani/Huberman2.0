@@ -1,16 +1,17 @@
 import { searchChapters, fetchAnswer } from './apiService';
 import { formatChapter } from "@/utils";
 import { handleStream } from "@/streams/streams"; // Ensure this is properly modularized too
-import { HLChapter } from '@/types';
 
 export const handleAnswer = async (
-  apiKey: string, 
-  query: string, 
-  matchCount: number, 
+  apiKey: string,
+  query: string,
+  matchCount: number,
   setAnswer: React.Dispatch<React.SetStateAction<string>>, 
   setStreamComplete: React.Dispatch<React.SetStateAction<boolean>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setChapters: React.Dispatch<React.SetStateAction<any[]>> // Adjust type as necessary
+  setChapters: React.Dispatch<React.SetStateAction<any[]>>, // Adjust type as necessary
+  // Add forceUpdate as a parameter
+  forceUpdate: () => void, // Adjust type as necessar
 ): Promise<void> => {
 
   if (!query) {
@@ -46,17 +47,29 @@ export const handleAnswer = async (
   const prompt = `QUERY:"${query}" \n\n Use the following passages to provide an answer to the query: ${results.map(formatChapter).join('\n\n')}`;
 
   const stream = await fetchAnswer(apiKey, prompt).catch(error => {
-    console.error("Error in handleAnswer:", error);
+    console.log("Error in handleAnswer:", error);
     window.alert('An error occurred while fetching the answer.');
     setLoading(false);
     return null; // Return null to indicate failure
   });
 
+  // Adjust the stream processing part with error handling
   if (stream) {
     const reader = stream.getReader();
     const decoder = new TextDecoder("utf-8");
-
-    reader.read().then((result) => handleStream(result, reader, decoder, setAnswer, setStreamComplete));
+    
+    // Wrap the reading in an immediately invoked async function to use await
+    (async () => {
+      try {
+        const result = await reader.read();
+        await handleStream(result, reader, decoder, setAnswer, setStreamComplete);
+      } catch (error) {
+        console.error("Error processing stream:", error);
+        window.alert('An error occurred while processing the stream.');
+      } finally {
+        setLoading(false); // This will now correctly wait for handleStream to finish
+      }
+    })();
   } else {
     setLoading(false);
   }

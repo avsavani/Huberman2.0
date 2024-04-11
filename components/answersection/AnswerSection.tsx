@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { IconThumbUpFilled, IconThumbDownFilled, IconClipboard } from '@tabler/icons-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface AnswerSectionProps {
   answer: string;
@@ -31,14 +33,12 @@ export const AnswerSection: React.FC<AnswerSectionProps> = ({
   };
 
   return (
-    <div className="mt-6">
-      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-        <div
-          className="text-gray-700"
-          dangerouslySetInnerHTML={{ __html: answer }}
-        />
+    <div className="mt-6 text-left"> {/* Ensure text alignment is set to left */}
+      <div className="font-bold text-2xl mb-2 min-w-[650px]">Answer</div>
+      <div className="prose">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer}</ReactMarkdown>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center py-5">
         <div>
           {!feedbackGiven && (
             <div className="flex space-x-4">

@@ -9,7 +9,7 @@ export default function Layout({
   return (
       <div className="bg-background flex flex-col h-screen">
           <Navbar />
-          <div className="flex-1 h-screen overflow-hidden">
+          <div className="flex-1 h-screen overflow-y-auto">
             {children}
           </div>
           <Footer />

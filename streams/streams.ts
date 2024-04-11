@@ -5,18 +5,21 @@ export const handleStream = async (
   reader: ReadableStreamDefaultReader<Uint8Array>, 
   decoder: TextDecoder, 
   setAnswer: React.Dispatch<React.SetStateAction<string>>, 
-  setStreamComplete: React.Dispatch<React.SetStateAction<boolean>>
+  setStreamComplete: React.Dispatch<React.SetStateAction<boolean>>,
 ): Promise<void> => {
+
   if (result.done) {
+    console.log("Stream completed.");
     setStreamComplete(true);
     return;
   }
-
+  
   if (result.value) {
     const decodedValue = decoder.decode(result.value, { stream: true });
-    setAnswer((prevAnswer) => prevAnswer + decodedValue);
+    console.log("Received chunk:", decodedValue);
+    setAnswer(prevAnswer => prevAnswer + decodedValue);
   }
-
+  
   const nextResult = await reader.read();
-  handleStream(nextResult, reader, decoder, setAnswer, setStreamComplete);
+  return handleStream(nextResult, reader, decoder, setAnswer, setStreamComplete); // Pass forceUpdate recursively
 };

@@ -12,6 +12,7 @@ import { storeQuery } from "@/actions/storeQuery";
 import { sendFeedback } from "@/actions/feedback";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { useReducer } from "react";
 
 export default function Home(): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +28,8 @@ export default function Home(): JSX.Element {
   const [streamComplete, setStreamComplete] = useState(false);
   const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  
   useEffect(() => {
     if (streamComplete) {
       storeQuery(query, answer).catch(console.error);
@@ -37,11 +39,9 @@ export default function Home(): JSX.Element {
 
   useEffect(() => {
     const { PG_KEY, PG_MATCH_COUNT, PG_MODE } = loadSettings();
-
     if (PG_KEY) setApiKey(PG_KEY);
     if (PG_MATCH_COUNT) setMatchCount(parseInt(PG_MATCH_COUNT));
     if (PG_MODE) setMode(PG_MODE as "search" | "chat");
-
     inputRef.current?.focus();
   }, []);
 
@@ -54,7 +54,6 @@ export default function Home(): JSX.Element {
     setShowSettings(false);
     inputRef.current?.focus();
   };
-
   const handleClear = () => {
     clearSettings();
     setApiKey("");
@@ -80,13 +79,13 @@ export default function Home(): JSX.Element {
   };
 
   const onAnswer = async () => {
-    await handleAnswer(apiKey, query, matchCount, setAnswer, setStreamComplete, setLoading, setChapters);
+    await handleAnswer(apiKey, query, matchCount, setAnswer, setStreamComplete, setLoading, setChapters, forceUpdate)
   };
 
   return (
     <>
-        <div className="flex-1 h-screen overflow-hidden">
-          <div className="mx-auto flex h-full w-full max-w-[650px] flex-col items-center px-3 pt-4 sm:pt-8"> {/* Adjusted max-width to 650px for a wider settings component */}
+        <div className="flex-1 h-full pb-10">
+            <div className="mx-auto flex h-full w-full max-w-[650px] flex-col items-center px-3 pt-4 sm:pt-8"> 
             <Button variant="outline"
                 className="cursor-pointer border px-3 py-1 text-sm hover:opacity-60 "
                 onClick={() => setShowSettings(!showSettings)}
@@ -114,28 +113,27 @@ export default function Home(): JSX.Element {
               mode={mode} 
               inputRef={inputRef} 
             />
-            {loading ? (
-              <div>Loading...</div>
-            ) : answer ? (
+            {loading }
+            {answer && (
               <AnswerSection 
-                answer={answer} 
-                isCopied={isCopied} 
-                setIsCopied={setIsCopied} 
-                feedbackGiven={feedbackGiven} 
-                handleFeedback={sendFeedback} 
-                query={query} 
+                answer={answer}
+                isCopied={isCopied}
+                setIsCopied={setIsCopied}
+                feedbackGiven={feedbackGiven}
+                handleFeedback={sendFeedback}
+                query={query}
               />
-            ) : chapters.length > 0 ? (
-              <PassageList 
-                chapters={chapters} 
-                ChapterIndex={selectedChapterIndex} 
-                handleChapterClick={setSelectedChapterIndex} 
-              />
-            ) : (
-              <div className="my-4">No results found.</div>
             )}
-          </div>
-        </div>
+            {!loading && chapters.length > 0 && (
+              <PassageList 
+                chapters={chapters}
+              />
+            )}
+            {!loading && !answer && chapters.length === 0 && (
+              <div className="my-4">No results found.</div>
+        )}
+      </div>
+    </div>
     </>
   );
 }

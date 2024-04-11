@@ -1,0 +1,14 @@
+/* Assuming you have a CSS file where you can add these */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000; /* high z-index to keep it above other content */
+  }
+  
+  .footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+  }
