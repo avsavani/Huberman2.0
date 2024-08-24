@@ -42,7 +42,7 @@ export const handleAnswer = async (
   }
 
   setChapters(results);
-
+  console.log()
   console.log("Here are the results:", results);
   const prompt = `QUERY:"${query}" \n\n Use the following passages to provide an answer to the query: ${results.map(formatChapter).join('\n\n')}`;
 

@@ -2,13 +2,16 @@ import OpenAI from 'openai';
 import { OpenAIModel } from "@/types";
 import { createClient } from "@supabase/supabase-js";
 
+
 export const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+// read the default model from the .env.local file
+export const defaultModel = (process.env.DEFAULT_MODEL as OpenAIModel) || OpenAIModel.GPT_4o_Mini;
 
 export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const openai = new OpenAI({ apiKey });
 
   const stream = openai.beta.chat.completions.stream({
-    model: OpenAIModel.GPT_4_Turbo,
+    model: defaultModel,
     messages: [
       {
         role: "system",
@@ -19,7 +22,7 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
         content: prompt
       }
     ],
-    max_tokens: 1000,
+    max_tokens: 4000,
     temperature: 0.0,
     stream: true,
   });

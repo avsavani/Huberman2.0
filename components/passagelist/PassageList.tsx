@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { HLChapter, HLSegment } from "@/types";
 import Image from 'next/image';
 import { IconExternalLink } from "@tabler/icons-react";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface PassageListProps {
   chapters: HLChapter[];
@@ -20,47 +27,40 @@ const formatChapterUI = (chapter: HLChapter, speaker: string) => (
 );
 
 export const PassageList: React.FC<PassageListProps> = ({ chapters }) => {
-  const [selectedChapterIndex, setSelectedChapterIndex] = useState<number | null>(null);
-
-  const handleChapterClick = (index: number) => {
-    setSelectedChapterIndex(prevIndex => prevIndex === index ? null : index);
-  };
-
   return (
     <div className="mt-6 mb-16">
       <div className="font-bold text-2xl">Passages</div>
       {chapters.map((chapter, index) => (
-        <div
-          key={index}
-          className={`mt-4 border border-zinc-600 rounded-lg p-4 cursor-pointer transition-all duration-500 ${selectedChapterIndex === index ? 'bg-blue-100' : ''}`}
-          onClick={() => handleChapterClick(index)}
-        >
-          <div className="flex justify-between">
-            <div className="flex items-start">
+        <Card key={index} className="mt-4 border border-zinc-600 rounded-lg p-1 cursor-pointer transition-all duration-500">
+
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value={`chapter-${index}`}>
+              <AccordionTrigger>
+              <CardHeader className="flex justify-between items-left flex-grow">
+            <div className="flex">
               <a href={`https://www.youtube.com/watch?v=${chapter.video_id}&t=${Math.round(parseFloat(chapter.start_time))}s`}
                  target="_blank" rel="noreferrer">
                 <Image src={`https://i.ytimg.com/vi/${chapter.video_id}/hqdefault.jpg`} 
-                       alt="Video thumbnail" width={128} height={72} className="object-cover rounded-lg" />
+                       alt="Video thumbnail" width={128} height={72} className="object-cover rounded-lg mr-4" />
               </a>
-              <div className="ml-4">
-                <div className="font-bold text-xl">{chapter.chapter_title}</div>
-                <div className="mt-1 font-bold text-sm">{chapter.video_date}</div>
-                <div className="mt-1 text-sm">
-                  {chapter.video_title.split('|')[0].split('｜')[0]}
-                </div>
+              <CardTitle className='px-3'>{chapter.chapter_title}</CardTitle>
+              <div className='flex-grow flex justify-end'>
+                <a className="hover:opacity-50"
+                href={`https://www.youtube.com/watch?v=${chapter.video_id}&t=${Math.round(parseFloat(chapter.start_time))}s`}
+                target="_blank" rel="noreferrer">
+                <IconExternalLink />
+                </a>
               </div>
             </div>
-            <a className="hover:opacity-50 ml-2"
-               href={`https://www.youtube.com/watch?v=${chapter.video_id}&t=${Math.round(parseFloat(chapter.start_time))}s`}
-               target="_blank" rel="noreferrer">
-              <IconExternalLink />
-            </a>
-          </div>
-          <div className={`passage-content ${selectedChapterIndex === index ? 'h-auto mt-2' : 'h-0'} overflow-hidden`}>
-              {formatChapterUI(chapter, chapter.video_title.split(':')[0].split('：')[0])}
-          </div>
-        </div>
+          </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent>
+                {formatChapterUI(chapter, chapter.video_title.split(':')[0].split('：')[0])}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Card>
       ))}
     </div>
   );
-};
+};  
