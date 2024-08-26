@@ -13,6 +13,9 @@ import { sendFeedback } from "@/actions/feedback";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { useReducer } from "react";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from "lucide-react";
 
 export default function Home(): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +32,11 @@ export default function Home(): JSX.Element {
   const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [, forceUpdate] = useReducer(x => x + 1, 0);
-  
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   useEffect(() => {
     if (streamComplete) {
       storeQuery(query, answer).catch(console.error);
@@ -44,6 +51,40 @@ export default function Home(): JSX.Element {
     if (PG_MODE) setMode(PG_MODE as "search" | "chat");
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      setIsLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+        setIsLoading(false);
+      } else {
+        router.push('/auth/login');
+      }
+    };
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
+        setIsLoading(false);
+      } else {
+        setUser(null);
+        router.push('/auth/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router, supabase.auth]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   const handleSave = () => {
     if (apiKey.length !== 51) {
@@ -84,56 +125,58 @@ export default function Home(): JSX.Element {
 
   return (
     <>
-        <div className="flex-1 h-full pb-10">
-            <div className="mx-auto flex h-full w-full max-w-[650px] flex-col items-center px-3 pt-4 sm:pt-8"> 
-            <Button variant="outline"
-                className="cursor-pointer border px-3 py-1 text-sm hover:opacity-60 "
-                onClick={() => setShowSettings(!showSettings)}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
-            <SettingsModal
-              showSettings={showSettings} 
-              setShowSettings={setShowSettings} 
-              mode={mode} 
-              setMode={setMode} 
-              matchCount={matchCount} 
-              setMatchCount={setMatchCount} 
-              apiKey={apiKey} 
-              setApiKey={setApiKey} 
-              handleSave={handleSave} 
-              handleClear={handleClear} 
+      <div className="flex-1 h-full pb-10">
+        <div className="mx-auto flex h-full w-full max-w-[750px] flex-col items-center px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8"> 
+          <Button variant="outline"
+            className="cursor-pointer border px-3 py-1 text-sm hover:opacity-60 mb-4"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
+          <SettingsModal
+            showSettings={showSettings} 
+            setShowSettings={setShowSettings} 
+            mode={mode} 
+            setMode={setMode} 
+            matchCount={matchCount} 
+            setMatchCount={setMatchCount} 
+            apiKey={apiKey} 
+            setApiKey={setApiKey} 
+            handleSave={handleSave} 
+            handleClear={handleClear} 
+          />
+          <SearchBar 
+            query={query} 
+            setQuery={setQuery} 
+            handleSearch={onSearch}
+            handleAnswer={onAnswer} 
+            mode={mode} 
+            inputRef={inputRef} 
+          />
+          {loading && <div className="mt-4"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+          {answer && (
+            <AnswerSection 
+              answer={answer}
+              isCopied={isCopied}
+              setIsCopied={setIsCopied}
+              feedbackGiven={feedbackGiven}
+              handleFeedback={sendFeedback}
+              query={query}
             />
-            <SearchBar 
-              query={query} 
-              setQuery={setQuery} 
-              handleSearch={onSearch} // Use the modularized search function
-              handleAnswer={onAnswer} 
-              mode={mode} 
-              inputRef={inputRef} 
-            />
-            {loading }
-            {answer && (
-              <AnswerSection 
-                answer={answer}
-                isCopied={isCopied}
-                setIsCopied={setIsCopied}
-                feedbackGiven={feedbackGiven}
-                handleFeedback={sendFeedback}
-                query={query}
-              />
-            )}
-            {!loading && chapters.length > 0 && (
+          )}
+          {!loading && chapters.length > 0 && (
+            <div className="w-full">
               <PassageList 
                 chapters={chapters}
               />
-            )}
-            {!loading && !answer && chapters.length === 0 && (
-              <div className="my-4">No results found.</div>
-        )}
+            </div>
+          )}
+          {!loading && !answer && chapters.length === 0 && (
+            <div className="my-4">No results found.</div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

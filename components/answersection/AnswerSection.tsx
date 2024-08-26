@@ -4,6 +4,7 @@ import React from 'react';
 import { IconThumbUpFilled, IconThumbDownFilled, IconClipboard } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import styles from './AnswerSection.module.css';
 
 interface AnswerSectionProps {
   answer: string;
@@ -33,9 +34,9 @@ export const AnswerSection: React.FC<AnswerSectionProps> = ({
   };
 
   return (
-    <div className="mt-6 text-left"> {/* Ensure text alignment is set to left */}
-      <div className="font-bold text-2xl mb-2 min-w-[650px]">Answer</div>
-      <div className="prose">
+    <div className={`mt-6 text-left w-full px-4 sm:px-6 md:px-8 ${styles.fadeIn}`}>
+      <div className="font-bold text-2xl mb-2">Answer</div> {/* Removed min-w-[650px] */}
+      <div className="prose max-w-full"> {/* Added max-w-full to allow full width */}
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer}</ReactMarkdown>
       </div>
       <div className="flex justify-between items-center py-5">
