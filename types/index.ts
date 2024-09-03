@@ -107,3 +107,14 @@ export enum OpenAIModel {
       github: string
     }
   }
+  
+  export type UserModelKey = {
+    id: string;
+    user_id: string;
+    provider: string;
+    model_name: string;
+    api_key: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  };

@@ -1,77 +1,59 @@
+'use client';
+
+import React, { useEffect } from 'react';
+import { useAuth } from '@/contexts/authContext';
 import { Inter as FontSans } from "next/font/google"
-import localFont from "next/font/local"
 import { cn } from "@/lib/utils"
-import { siteConfig } from "@/config/site"
-
-import "@/app/globals.css"
-
+import { Navbar } from "@/components/layout/Navbar"
+import { AuthProvider } from "@/contexts/authContext"
+import { Loader2 } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { Footer } from "@/components/layout/Footer"
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
-
-
-interface RootLayoutProps {
+interface AuthenticatedLayoutProps {
   children: React.ReactNode
 }
 
-export const metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [
-    "Huberman ai",
-    "Andrew Huberman",
-    "Huberman GPT",
-    "talk to Huberman",
-    "Huberman Lab",
-    "Huberman Lab podcast",
-  ],
-  authors: [
-    {
-      name: "Ashish Savani",
-      url: "https://askhuberman.app",
-    },
-  ],
-  creator: "Ashish Savani",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: siteConfig.url,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: [`${siteConfig.url}/og.jpg`],
-    creator: "@shadcn",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
-  manifest: `${siteConfig.url}/site.webmanifest`,
-}
+export default function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-export default function RootLayout({ children }: RootLayoutProps) {
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        console.log("No user found, redirecting to login");
+        router.push('/auth/login');
+      } else {
+        console.log("User found, staying on current page");
+      }
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body
-        className={cn(
-          "h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
-      >
-          {children}
-      </body>
-    </html>
-  )
+    <AuthProvider>
+    <div className={cn(
+      "bg-background flex flex-col h-screen font-sans antialiased",
+      fontSans.variable
+    )}>
+      <Navbar />
+      <div className="flex-1 flex-grow overflow-y-auto  bg-gray-100">
+        {children}
+      </div>
+      <Footer />
+    </div>
+    </AuthProvider>
+  );
 }
